@@ -1,0 +1,411 @@
+/* src/ui/style.css —— 全部样式：竖屏 390×844 基准、安全区、热区、touch-action（art §4 / design §8.1） */
+
+:root {
+  --ink0: #0B0E14;
+  --ink1: #12161F;
+  --ink2: #1A1F2B;
+  --ink3: #2A3140;
+  --paper: #F5F0E4;
+  --paper-dim: #E8E3D7;
+  --vermilion: #C8362B;
+  --gold: #E8C46A;
+  --heal: #7FD48A;
+  --font-cn: "PingFang SC","Hiragino Sans GB","Source Han Sans SC","Noto Sans CJK SC","Microsoft YaHei","Heiti SC","WenQuanYi Micro Hei",system-ui,sans-serif;
+  --font-num: ui-monospace,"SF Mono",Menlo,Consolas,"Roboto Mono",monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  background: var(--ink0);
+  font-family: var(--font-cn);
+  color: var(--paper);
+  overflow: hidden;
+  overscroll-behavior: none;      /* 禁橡皮筋 */
+  touch-action: none;             /* 禁双击缩放手势（配合 meta） */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#wrap {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 50% 30%, #10141d 0%, var(--ink0) 70%);
+}
+
+/* 竖屏容器：390×844 基准；宽 < 390 时等比收紧 */
+#app {
+  position: relative;
+  width: min(100vw, 390px);
+  height: min(100dvh, 844px);
+  max-height: 100dvh;
+  background: var(--ink0);
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--ink3);
+}
+
+/* 桌面预览：手机框 + 提示（orientation.js 加 .desktop） */
+#wrap.desktop #app { box-shadow: 0 0 0 2px var(--ink3), 0 24px 80px rgba(0,0,0,.6); border-radius: 18px; }
+#wrap.desktop::before {
+  content: "桌面预览 · 建议 390×844 竖屏窗口";
+  position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+  font-size: 12px; color: var(--ink3); letter-spacing: .2em; white-space: nowrap;
+}
+
+/* ───────── ① 顶栏 HUD ───────── */
+#hud {
+  position: absolute; top: 0; left: 0; right: 0; height: 96px;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: 44px 1fr 60px 44px;
+  grid-template-rows: 28px 20px 12px 22px;
+  gap: 0 8px;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 0;
+  background: linear-gradient(rgba(11,14,20,.82), rgba(11,14,20,.82) 70%, rgba(11,14,20,0));
+  border-bottom: 1px solid rgba(42,49,64,.6);
+  align-items: center;
+}
+
+#classIcon {
+  grid-row: 1 / span 3;
+  width: 44px; height: 44px;
+  background: rgba(26,31,43,.9);
+  border: 2px solid var(--ink3);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+
+#bars { grid-column: 2; display: contents; }
+
+.bar {
+  position: relative;
+  background: rgba(11,14,20,.9);
+  border: 1px solid var(--ink3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.bar.hp   { grid-column: 2; grid-row: 1; height: 22px; }
+.bar.res  { grid-column: 2; grid-row: 2; height: 16px; }
+.bar.exp  { grid-column: 2; grid-row: 3; height: 8px;  border-color: transparent; background: rgba(11,14,20,.6); }
+
+.bar .fill {
+  position: absolute; inset: 0;
+  transform-origin: left center;
+  transform: scaleX(1);
+}
+.bar.hp .fill  { background: var(--vermilion); }
+.bar.res .fill { background: var(--gold); }
+.bar.exp .fill { background: rgba(232,196,106,.55); }
+
+.bar .num {
+  position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+  font-family: var(--font-num);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--paper);
+  text-shadow: 0 0 3px var(--ink0);
+  line-height: 1;
+}
+.bar.hp .num { font-size: 12px; }
+
+.bar .lv {
+  position: absolute; left: 4px; top: 50%; transform: translateY(-50%);
+  font-family: var(--font-num); font-size: 10px; font-weight: 700;
+  color: rgba(232,196,106,.9); text-shadow: 0 0 3px var(--ink0); line-height: 1;
+}
+
+#statusIcons {
+  grid-column: 2; grid-row: 4;
+  display: flex; gap: 4px; height: 18px; align-items: center;
+}
+#statusIcons .st {
+  width: 18px; height: 18px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+  color: var(--paper-dim);
+  background: rgba(26,31,43,.5);
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+#statusIcons .st.on { background: var(--ink2); border-color: var(--vermilion); color: var(--paper); }
+
+#progress {
+  grid-column: 3; grid-row: 1 / span 3;
+  height: 46px;
+  background: rgba(11,14,20,.7);
+  border: 1px solid var(--ink3);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  color: var(--paper-dim);
+  letter-spacing: .05em;
+}
+
+#pauseBtn {
+  grid-column: 4; grid-row: 1 / span 3;
+  width: 44px; height: 44px;
+  background: rgba(26,31,43,.85);
+  border: 2px solid var(--ink3);
+  border-radius: 8px;
+  color: var(--paper-dim);
+  font-size: 18px;
+  touch-action: manipulation;
+}
+#pauseBtn:active { background: var(--ink3); }
+
+/* ───────── ② 战场 Canvas ───────── */
+#stage {
+  position: absolute;
+  top: 96px; left: 0; right: 0;
+  /* 显式高度 = 视口高 − HUD 96 − 操作区 248（844 基准 = 500，design §8.1）。
+     不可省略/改 auto：canvas 是替换元素，height:auto 时按内在宽高比 2:1
+     塌成 390×195 且 bottom:0 被忽略 → 战场压成窄带（P0）。 */
+  height: calc(100% - 96px - 248px);
+  width: 100%;
+  pointer-events: none;   /* design §8.1：战场不接事件 */
+}
+
+/* Boss 机制横幅 */
+#banner {
+  position: absolute;
+  top: 100px; left: 45px; width: 300px; height: 32px;
+  z-index: 15;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 0 10px;
+  background: rgba(200,54,43,.30);
+  border-top: 1px solid var(--vermilion);
+  border-bottom: 1px solid var(--vermilion);
+}
+#banner.teach { background: rgba(200,54,43,.42); }
+#bannerText { font-size: 16px; font-weight: 700; color: var(--paper); line-height: 1.1; }
+#bannerBar { height: 3px; margin-top: 2px; background: rgba(11,14,20,.6); }
+#bannerFill { display: block; height: 100%; width: 100%; background: var(--paper); transform-origin: left; }
+
+/* ───────── ③ 底部操作区（§8.1 矩形，bottom 锚定） ───────── */
+#controls { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
+
+.key {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: manipulation;    /* 允许点按，禁双击缩放 */
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(26,31,43,.92);
+  border: 2px solid var(--ink3);
+  border-radius: 12px;
+  color: var(--paper-dim);
+  font-family: var(--font-cn);
+  font-weight: 700;
+  overflow: hidden;
+  transition: transform .06s ease-out, border-color .12s;
+}
+.key:active { transform: scale(.93); }
+.key .icon { font-size: 26px; line-height: 1; }
+.key .sub { position: absolute; bottom: 6px; right: 8px; font-family: var(--font-num); font-size: 11px; color: var(--paper-dim); }
+.key .count {
+  position: absolute; top: 4px; right: 6px;
+  font-family: var(--font-num); font-size: 12px; font-weight: 700;
+  color: var(--heal); text-shadow: 0 0 3px var(--ink0);
+}
+.key .lv {
+  position: absolute; bottom: 4px; left: 6px;
+  font-family: var(--font-num); font-size: 10px; font-weight: 700;
+  color: var(--gold); text-shadow: 0 0 3px var(--ink0);
+}
+.key.empty { opacity: .45; }
+
+/* §8.1：药瓶(232,574,60,60) 闪避(188,648,100,100) 技能A(298,606,84,84) B(290,706,92,92) C(194,756,76,76) */
+#btnPotion { left: 59.5%; bottom: calc(844px - 574px - 60px); width: 60px; height: 60px; }
+#btnDodge  { left: 48.2%; bottom: calc(844px - 648px - 100px); width: 100px; height: 100px; border-width: 3px; border-color: rgba(245,240,228,.5); }
+#btnSkillA { left: 76.4%; bottom: calc(844px - 606px - 84px); width: 84px; height: 84px; }
+#btnSkillB { left: 74.4%; bottom: calc(844px - 706px - 92px); width: 92px; height: 92px; }
+#btnSkillC { left: 49.7%; bottom: calc(844px - 756px - 76px); width: 76px; height: 76px; }
+
+/* 就绪态描边 = 可点信号（art §4） */
+.key.ready { border-color: var(--gold); }
+#btnDodge.ready { border-color: rgba(232,196,106,.8); }
+
+/* CD 转圈遮罩：conic-gradient 扇形（design §3.4） */
+.cdmask {
+  position: absolute; inset: 0;
+  background: conic-gradient(rgba(11,14,20,.78) 0deg, transparent 0deg);
+  border-radius: inherit;
+  pointer-events: none;
+}
+.cdnum {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-num);
+  font-size: 16px; font-weight: 700;
+  color: var(--paper);
+  text-shadow: 0 0 4px var(--ink0);
+  pointer-events: none;
+}
+
+/* 技能未就绪（资源不足）灰显 */
+.key.noRes .icon { filter: grayscale(1) brightness(.6); }
+
+/* ───────── 界面层（职业选择 / 三选一 / 结算 / 暂停 / 对比） ───────── */
+#overlay {
+  position: absolute; inset: 0; z-index: 30;
+  display: flex; flex-direction: column;
+  background: rgba(11,14,20,.86);
+  backdrop-filter: blur(2px);
+  overflow-y: auto;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) 16px calc(20px + env(safe-area-inset-bottom, 0px));
+}
+
+#overlay .title {
+  text-align: center;
+  font-size: 24px; font-weight: 700;
+  color: var(--paper);
+  margin: 8px 0 4px;
+  letter-spacing: .1em;
+}
+#overlay .subtitle {
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink3);
+  margin-bottom: 14px;
+  letter-spacing: .15em;
+}
+
+/* 职业卡片 */
+.classCard {
+  position: relative;
+  background: var(--ink1);
+  border: 2px solid var(--ink3);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+.classCard.selected { border-color: var(--gold); }
+.classCard.locked { opacity: .55; }
+.classCard .cname { font-size: 18px; font-weight: 700; color: var(--paper); }
+.classCard .crole { font-size: 12px; color: var(--gold); margin: 2px 0 6px; }
+.classCard .cdesc { font-size: 12px; color: var(--paper-dim); line-height: 1.5; }
+.classCard .cstats {
+  margin-top: 8px;
+  font-family: var(--font-num);
+  font-size: 11px; color: var(--paper-dim);
+  display: flex; flex-wrap: wrap; gap: 4px 12px;
+}
+.classCard .lockTag {
+  position: absolute; top: 10px; right: 12px;
+  font-size: 11px; color: var(--vermilion);
+  border: 1px solid var(--vermilion);
+  border-radius: 4px; padding: 2px 6px;
+}
+
+/* 三选一 */
+.rewardCard {
+  background: var(--ink1);
+  border: 2px solid var(--ink3);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.rewardCard:active { border-color: var(--gold); }
+.rewardCard .rtitle { font-size: 16px; font-weight: 700; color: var(--paper); }
+.rewardCard .rdesc { font-size: 12px; color: var(--paper-dim); margin-top: 4px; }
+
+/* 装备对比表 */
+.compareTable { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; }
+.compareTable th, .compareTable td { padding: 6px 8px; text-align: center; border-bottom: 1px solid var(--ink2); }
+.compareTable th { color: var(--ink3); font-weight: 400; }
+.compareTable td { font-family: var(--font-num); color: var(--paper-dim); }
+.compareTable td.up { color: var(--heal); }
+.compareTable td.down { color: #FF6B5E; }
+.compareTable td.name { font-family: var(--font-cn); }
+.compareTable .verdictRow td { font-family: var(--font-cn); font-size: 13px; font-weight: 700; }
+.verdict.better { color: var(--heal); }
+.verdict.worse { color: #FF6B5E; }
+.verdict.equal { color: var(--gold); }
+
+/* 通用按钮 */
+.btnRow { display: flex; gap: 10px; margin-top: 12px; }
+.btn {
+  flex: 1;
+  min-height: 48px;
+  border: 2px solid var(--ink3);
+  border-radius: 10px;
+  background: var(--ink2);
+  color: var(--paper-dim);
+  font-size: 15px; font-weight: 700;
+  font-family: var(--font-cn);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.btn:active { background: var(--ink3); }
+.btn.primary { border-color: var(--gold); color: var(--gold); }
+.btn.danger { border-color: var(--vermilion); color: #FF8A80; }
+
+/* 结算 */
+.resultBox { text-align: center; }
+.resultBox .big { font-size: 28px; font-weight: 700; margin: 16px 0 8px; letter-spacing: .2em; }
+.resultBox .big.win { color: var(--gold); }
+.resultBox .big.lose { color: var(--vermilion); }
+.resultBox .rows { font-family: var(--font-num); font-size: 13px; color: var(--paper-dim); line-height: 2; }
+.resultBox .rows b { color: var(--paper); }
+
+/* 暂停面板 / 技能点面板 */
+.panelList .item {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--ink1); border: 2px solid var(--ink3); border-radius: 10px;
+  padding: 12px 14px; margin-bottom: 10px; cursor: pointer;
+}
+.panelList .item:active { border-color: var(--gold); }
+.panelList .item .sicon { font-size: 22px; margin-right: 10px; }
+.panelList .item .sname { font-size: 14px; font-weight: 700; color: var(--paper); }
+.panelList .item .sdesc { font-size: 11px; color: var(--paper-dim); margin-top: 2px; }
+.panelList .item .slv { margin-left: auto; font-family: var(--font-num); font-size: 13px; color: var(--gold); }
+
+.sectionHead { font-size: 13px; color: var(--gold); margin: 14px 0 8px; letter-spacing: .1em; }
+
+/* toast */
+#toast {
+  position: absolute;
+  left: 50%; bottom: 260px;
+  transform: translateX(-50%);
+  z-index: 40;
+  max-width: 320px;
+  padding: 8px 16px;
+  background: rgba(11,14,20,.92);
+  border: 1px solid var(--ink3);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--paper);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+/* 横屏提示 / file:// 提示 */
+#rotateTip, #fileTip {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--ink0);
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+}
+/* hidden 属性必须压过作者样式的 display（#overlay/#banner/#toast 及
+   rotateTip/fileTip 均有作者 display 或未来可能加），否则浮层在 hidden
+   态仍全屏渲染、拦截指针（QA 三次同类缺陷，此处一次清零） */
+#rotateTip[hidden], #fileTip[hidden],
+#overlay[hidden], #banner[hidden], #toast[hidden] { display: none !important; }
+#rotateTip .panel, #fileTip .panel { padding: 24px; font-size: 14px; color: var(--paper-dim); line-height: 2; }
+#fileTip h2 { color: var(--vermilion); font-size: 18px; margin-bottom: 8px; }
+#fileTip pre {
+  font-family: var(--font-num); font-size: 12px; text-align: left;
+  background: var(--ink1); border: 1px solid var(--ink3); border-radius: 8px;
+  padding: 10px 14px; margin: 10px 0; color: var(--gold);
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  #rotateTip { display: flex; }
+  #wrap { display: none; }
+}

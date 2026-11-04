@@ -1,14 +1,93 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>暮影之谷 · Shadow Vale</title>
-    <script type="module" crossorigin src="./assets/index-BcPn4Prl.js"></script>
-    <link rel="stylesheet" href="./assets/index-DtKLNq5b.css">
-  </head>
-  <body>
-    <div id="game-root"></div>
-    
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0B0E14">
+<title>夜行录 · 夜行即除妖</title>
+<link rel="stylesheet" href="./src/ui/style.css">
+</head>
+<body>
+<div id="wrap">
+  <div id="app">
+    <!-- ① 顶栏 HUD（DOM，数值变化时才更新） -->
+    <header id="hud">
+      <div id="classIcon"><span id="classEmoji">⚔️</span></div>
+      <div id="bars">
+        <div class="bar hp" title="生命">
+          <div class="fill" id="hpFill"></div>
+          <span class="num" id="hpNum">0/0</span>
+        </div>
+        <div class="bar res">
+          <div class="fill" id="resFill"></div>
+          <span class="num" id="resNum">0/0</span>
+        </div>
+        <div class="bar exp"><div class="fill" id="expFill"></div><span class="lv" id="lvTag">Lv1</span></div>
+        <div id="statusIcons">
+          <span class="st" id="stBurn" title="灼烧">灼</span>
+          <span class="st" id="stStun" title="眩晕">眩</span>
+          <span class="st" id="stSlow" title="缓滞">缓</span>
+          <span class="st" id="stShield" title="护盾">盾</span>
+        </div>
+      </div>
+      <div id="progress">一 · 1/5</div>
+      <button id="pauseBtn" aria-label="暂停">⏸</button>
+    </header>
+
+    <!-- ② 战场 Canvas（渲染层只读 state） -->
+    <canvas id="stage"></canvas>
+
+    <!-- Boss 机制横幅（y=100，仅机制时） -->
+    <div id="banner" hidden><span id="bannerText"></span><div id="bannerBar"><i id="bannerFill"></i></div></div>
+
+    <!-- ③ 底部操作区（玻璃浮层，热区 ≥44×44） -->
+    <div id="controls">
+      <button class="key" id="btnPotion" aria-label="药瓶">
+        <span class="icon">🧪</span><span class="count" id="potionCount">3</span>
+        <span class="cdmask" id="cdPotion"></span><span class="cdnum" id="cdnPotion"></span>
+      </button>
+      <button class="key big" id="btnDodge" aria-label="闪避">
+        <span class="icon">身法</span><span class="sub" id="staminaTag">100</span>
+        <span class="cdmask" id="cdDodge"></span><span class="cdnum" id="cdnDodge"></span>
+      </button>
+      <button class="key" id="btnSkillA" aria-label="技能一">
+        <span class="icon" id="icoA">—</span><span class="lv" id="lvA"></span>
+        <span class="cdmask" id="cdA"></span><span class="cdnum" id="cdnA"></span>
+      </button>
+      <button class="key" id="btnSkillB" aria-label="技能二">
+        <span class="icon" id="icoB">—</span><span class="lv" id="lvB"></span>
+        <span class="cdmask" id="cdB"></span><span class="cdnum" id="cdnB"></span>
+      </button>
+      <button class="key" id="btnSkillC" aria-label="技能三">
+        <span class="icon" id="icoC">—</span><span class="lv" id="lvC"></span>
+        <span class="cdmask" id="cdC"></span><span class="cdnum" id="cdnC"></span>
+      </button>
+    </div>
+
+    <!-- 界面层：职业选择 / 三选一 / 装备对比 / 结算 / 暂停 -->
+    <div id="overlay" hidden></div>
+    <div id="toast" hidden></div>
+  </div>
+</div>
+<div id="rotateTip" hidden><div class="panel">🌙 夜行录为竖屏游戏<br>请旋转手机至竖屏游玩</div></div>
+<div id="fileTip" hidden>
+  <div class="panel">
+    <h2>无法直接打开</h2>
+    <p>ES Modules 在 file:// 协议下会被浏览器拦截（跨源限制）。</p>
+    <p>请用本地静态服务打开，例如：</p>
+    <pre>node tools/serve.mjs 8000
+# 或 python3 -m http.server 8000</pre>
+    <p>然后访问 http://localhost:8000/</p>
+  </div>
+</div>
+<script>
+  if (location.protocol === 'file:') {
+    document.getElementById('fileTip').hidden = false;
+    document.getElementById('wrap').style.display = 'none';
+  }
+</script>
+<script type="module" src="./src/main.js"></script>
+</body>
 </html>

@@ -8,7 +8,7 @@ export default {
     name: '力士',
     role: '近战坦克 / 爆发',
     desc: '站桩硬吃，越挨打越强。一刀一顿、刀刀见血，攒满怒气后砸下去。',
-    icon: '⚔️',
+    icon: 'cls-lishi',
     color: '#E8734A',
     unlockAt: 0,                       // 初始可选
     resource: { id: 'rage', name: '怒气', max: 100, color: '#E8734A' },
@@ -28,7 +28,7 @@ export default {
     name: '术士',
     role: '远程炮台 / 控场',
     desc: '265px 超远攻击距离，站着就能打。蓝条即续航，见底时输出断崖。',
-    icon: '🔮',
+    icon: 'cls-shushi',
     color: '#4FA8D8',
     unlockAt: 120,                     // §5.7 累计道行 120 解锁
     resource: { id: 'mana', name: '灵力', max: 100, color: '#4FA8D8' },
@@ -47,7 +47,7 @@ export default {
     name: '游侠',
     role: '高频近中程 / 暴击流',
     desc: '0.6 秒一刀，像在打快板。暴击驱动连击点，最快的手，最脆的身。',
-    icon: '🏹',
+    icon: 'cls-youxia',
     color: '#6FBF73',
     unlockAt: 260,                     // §5.7 累计道行 260 解锁
     resource: { id: 'combo', name: '连击点', max: 5, color: '#6FBF73' },

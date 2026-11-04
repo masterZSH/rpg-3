@@ -86,20 +86,49 @@ html, body {
   position: relative;
   background: rgba(11,14,20,.9);
   border: 1px solid var(--ink3);
+  border-top-color: rgba(232,227,215,.12);
   border-radius: 4px;
   overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,.7);
 }
 .bar.hp   { grid-column: 2; grid-row: 1; height: 22px; }
 .bar.res  { grid-column: 2; grid-row: 2; height: 16px; }
-.bar.exp  { grid-column: 2; grid-row: 3; height: 8px;  border-color: transparent; background: rgba(11,14,20,.6); }
+.bar.exp  { grid-column: 2; grid-row: 3; height: 8px;  border-color: transparent; background: rgba(11,14,20,.6); box-shadow: none; }
 
 .bar .fill {
   position: absolute; inset: 0;
   transform-origin: left center;
   transform: scaleX(1);
 }
-.bar.hp .fill  { background: var(--vermilion); }
-.bar.res .fill { background: var(--gold); }
+/* HP 填充：上亮下暗体积感 + 斜高光（art §4.2） */
+.bar.hp .fill {
+  background: linear-gradient(180deg, #E8734A 0%, #C8362B 55%, #9C2A22 100%);
+}
+.bar.hp .fill::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(115deg, transparent 40%, rgba(245,240,228,.16) 50%, transparent 60%);
+}
+/* 损耗残影 ghost：同吃 scaleX，延迟 0.35s 慢追（art §4.2） */
+#hpGhost {
+  position: absolute; inset: 0;
+  transform-origin: left center;
+  transform: scaleX(1);
+  background: rgba(232,227,215,.35);
+  transition: transform .5s ease-out .35s;
+  pointer-events: none;
+}
+/* 低血呼吸（<30%）：朱红 overlay（art §4.2） */
+.bar.hp.low::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: var(--vermilion);
+  opacity: .15;
+  animation: hpPulse .5s step-end infinite alternate;
+  pointer-events: none;
+  z-index: 2;
+}
+@keyframes hpPulse { from { opacity: .15; } to { opacity: .4; } }
 .bar.exp .fill { background: rgba(232,196,106,.55); }
 
 .bar .num {
@@ -182,7 +211,14 @@ html, body {
   border-bottom: 1px solid var(--vermilion);
 }
 #banner.teach { background: rgba(200,54,43,.42); }
-#bannerText { font-size: 16px; font-weight: 700; color: var(--paper); line-height: 1.1; }
+#bannerText { font-size: 16px; font-weight: 700; color: var(--paper); line-height: 1.1; display: flex; align-items: center; gap: 8px; }
+/* 朱砂三角警示标（替代退役的横幅前缀 emoji，art §5.1） */
+#bannerText::before {
+  content: "";
+  flex: 0 0 16px;
+  width: 16px; height: 16px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23C8362B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5L21.5 20h-19L12 3.5z'/%3E%3Cpath d='M12 10v4.5'/%3E%3Ccircle cx='12' cy='17.2' r='0.8' fill='%23C8362B' stroke='none'/%3E%3C/svg%3E") center/contain no-repeat;
+}
 #bannerBar { height: 3px; margin-top: 2px; background: rgba(11,14,20,.6); }
 #bannerFill { display: block; height: 100%; width: 100%; background: var(--paper); transform-origin: left; }
 
@@ -194,7 +230,9 @@ html, body {
   pointer-events: auto;
   touch-action: manipulation;    /* 允许点按，禁双击缩放 */
   display: flex; align-items: center; justify-content: center;
-  background: rgba(26,31,43,.92);
+  /* art §4.1：三段微渐变底 + 双内阴影 = 立体感 */
+  background: linear-gradient(180deg, #1E2530 0%, #1A1F2B 60%, #141922 100%);
+  box-shadow: inset 0 3px 6px rgba(0,0,0,.55), inset 0 -1px 0 rgba(232,227,215,.06);
   border: 2px solid var(--ink3);
   border-radius: 12px;
   color: var(--paper-dim);
@@ -203,8 +241,22 @@ html, body {
   overflow: hidden;
   transition: transform .06s ease-out, border-color .12s;
 }
-.key:active { transform: scale(.93); }
+/* 金属双线框（::before 内圈 1px） */
+.key::before {
+  content: "";
+  position: absolute; inset: 2px;
+  border: 1px solid rgba(232,227,215,.10);
+  border-radius: 10px;
+  pointer-events: none;
+}
+.key:active {
+  transform: scale(.93);
+  box-shadow: inset 0 0 10px rgba(0,0,0,.8);
+}
+.key.big::before { border-color: rgba(232,227,215,.18); }
+.key.big:active { transform: scale(.96); }
 .key .icon { font-size: 26px; line-height: 1; }
+.key .icon svg { width: 34px; height: 34px; display: block; }
 .key .sub { position: absolute; bottom: 6px; right: 8px; font-family: var(--font-num); font-size: 11px; color: var(--paper-dim); }
 .key .count {
   position: absolute; top: 4px; right: 6px;
@@ -225,8 +277,10 @@ html, body {
 #btnSkillB { left: 74.4%; bottom: calc(844px - 706px - 92px); width: 92px; height: 92px; }
 #btnSkillC { left: 49.7%; bottom: calc(844px - 756px - 76px); width: 76px; height: 76px; }
 
-/* 就绪态描边 = 可点信号（art §4） */
+/* 就绪态描边 = 可点信号（art §4）+ 图标呼吸（低端档关） */
 .key.ready { border-color: var(--gold); }
+.key.ready .icon { animation: iconBreath 1.2s ease-in-out infinite; }
+@keyframes iconBreath { 0%, 100% { opacity: .75; } 50% { opacity: 1; } }
 #btnDodge.ready { border-color: rgba(232,196,106,.8); }
 
 /* CD 转圈遮罩：conic-gradient 扇形（design §3.4） */
@@ -408,4 +462,62 @@ html, body {
 @media (orientation: landscape) and (max-height: 500px) {
   #rotateTip { display: flex; }
   #wrap { display: none; }
+}
+
+/* ───────── art v2 §4.3：面板卡片纸纹理 / 墨晕边 / 朱砂角印 ───────── */
+.classCard, .rewardCard, .panelList .item {
+  background:
+    repeating-linear-gradient(0deg, rgba(232,227,215,.022) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(11,14,20,.05) 0 1px, transparent 1px 4px),
+    #12161F;
+  box-shadow: 0 0 0 1px #2A3140, inset 0 0 14px rgba(11,14,20,.5);
+}
+/* 朱砂角印：::before 左上 / ::after 右下，对角呼应 */
+.classCard::before, .rewardCard::before, .panelList .item::before,
+.classCard::after, .rewardCard::after, .panelList .item::after {
+  content: "";
+  position: absolute;
+  width: 8px; height: 8px;
+  pointer-events: none;
+}
+.classCard::before, .rewardCard::before, .panelList .item::before {
+  top: 4px; left: 4px;
+  border-left: 2px solid var(--vermilion);
+  border-top: 2px solid var(--vermilion);
+}
+.classCard::after, .rewardCard::after, .panelList .item::after {
+  bottom: 4px; right: 4px;
+  border-right: 2px solid var(--vermilion);
+  border-bottom: 2px solid var(--vermilion);
+}
+.classCard { position: relative; }
+.rewardCard { position: relative; }
+.panelList .item { position: relative; }
+.classCard.selected::before, .classCard.selected::after {
+  border-color: var(--gold);
+  border-width: 3px;
+}
+/* 标题条：印章式朱红落款短线 */
+#overlay .title::after {
+  content: "";
+  display: block;
+  width: 24px; height: 2px;
+  margin: 6px auto 0;
+  background: var(--vermilion);
+}
+
+/* ───────── SVG 图标尺寸（内联 SVG 系统，emoji 退役） ───────── */
+.svgIcon { display: inline-flex; align-items: center; justify-content: center; }
+.svgIcon svg { width: 1.1em; height: 1.1em; vertical-align: -0.18em; }
+#classIcon svg { width: 30px; height: 30px; display: block; }
+#statusIcons .st svg { width: 12px; height: 12px; display: block; }
+#pauseBtn svg { width: 20px; height: 20px; display: block; }
+.panelList .item .sicon svg { width: 24px; height: 24px; display: block; }
+
+/* ───────── 降档（?q=low / 自动降档）：CSS 侧开关（art §7） ───────── */
+body.lowq .key.ready .icon { animation: none; opacity: 1; }
+body.lowq .bar.hp.low::before { animation: none; opacity: .3; }
+body.lowq #hpGhost { display: none; }
+body.lowq .classCard, body.lowq .rewardCard, body.lowq .panelList .item {
+  background: #12161F;
 }

@@ -34,6 +34,7 @@ const state = createInitialState(seed);
 applySaveToState(state, loaded.save);
 
 const settings = state.meta.settings;
+if (settings.reduceShake === undefined) settings.reduceShake = false;   // 晕动症友好总开关（vfx §6）
 
 // ─────────── 各层 ───────────
 const audio = createAudio(settings.muted);
@@ -47,6 +48,7 @@ const screens = createScreens();
 
 let skipSkillPoints = false;   // 玩家主动跳过技能点面板（本节点不再追问）
 let lastRenderAt = 0;
+let lastLowQ = false;          // 降档态 body class（关 CSS 呼吸/纸纹/残影）
 
 // ─────────── 存档落盘辅助 ───────────
 function flushNow(force) {
@@ -89,6 +91,9 @@ function drainEvents() {
   for (let i = 0; i < evs.length; i++) {
     const e = evs[i];
     world.handleEvent(state, e);
+    // A3：Boss 死亡 0.4× 慢镜 45 tick（design §9）—— loop 层累加器时间缩放，
+    // 逻辑 tick 率与确定性不变；粒子崩解等特效照常按逻辑 tick 计费。
+    if (e.type === 'death' && e.tier === 'boss') loop.slowMo(0.4, 45);
     const sfx = sfxFor(e);
     if (sfx) audio.play(sfx);
   }
@@ -205,6 +210,7 @@ function pauseGame() {
   screens.showPause({
     get muted() { return settings.muted; },
     get quality() { return perf.quality; },
+    get reduceShake() { return !!settings.reduceShake; },
     onResume() {
       screens.hide();
       loop.start();
@@ -213,6 +219,10 @@ function pauseGame() {
     onToggleMute() {
       settings.muted = !settings.muted;
       audio.setMuted(settings.muted);
+      flushNow(true);
+    },
+    onToggleShake() {
+      settings.reduceShake = !settings.reduceShake;
       flushNow(true);
     },
     onCycleQuality() {
@@ -258,6 +268,12 @@ function renderFn(alpha) {
 
   drainEvents();
   driveScreens();
+
+  const lowQ = perf.low;
+  if (lowQ !== lastLowQ) {
+    lastLowQ = lowQ;
+    document.body.classList.toggle('lowq', lowQ);
+  }
 
   world.update(dtSec);
   world.draw(state, alpha, dtSec);

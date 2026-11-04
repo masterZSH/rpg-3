@@ -265,6 +265,13 @@ export const theme = {
   playerHurt: '#FF6B5E',
   fontNum: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
   fontCn: '"PingFang SC","Hiragino Sans GB","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif',
+  // ── 色板 v2 追加（art_spec_v2 §0；沿用现有键不动） ──
+  highlight: '#E8E3D7',        // 剪影高光层（= paperDim 复用，显式命名便于施工）
+  accentLishi: '#E8734A', accentShushi: '#4FA8D8', accentYouxia: '#6FBF73',
+  fog: 'rgba(42,49,64,',       // 雾带基色（拼 alpha 使用）
+  dust: '#E8C46A',             // 尘埃粒子（暗金，低亮度不抢戏）
+  lantern: '#E8734A',          // 灯笼/火光光斑芯
+  moon: 'rgba(232,227,215,',   // 月光（拼 alpha）
 };
 
 export default balance;

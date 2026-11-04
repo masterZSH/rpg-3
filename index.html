@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0B0E14">
 <title>夜行录 · 夜行即除妖</title>
+<link rel="icon" href="data:,">
 <link rel="stylesheet" href="./src/ui/style.css">
 </head>
 <body>
@@ -14,7 +15,7 @@
   <div id="app">
     <!-- ① 顶栏 HUD（DOM，数值变化时才更新） -->
     <header id="hud">
-      <div id="classIcon"><span id="classEmoji">⚔️</span></div>
+      <div id="classIcon"><span id="classEmoji"></span></div>
       <div id="bars">
         <div class="bar hp" title="生命">
           <div class="fill" id="hpFill"></div>
@@ -33,7 +34,7 @@
         </div>
       </div>
       <div id="progress">一 · 1/5</div>
-      <button id="pauseBtn" aria-label="暂停">⏸</button>
+      <button id="pauseBtn" aria-label="暂停"></button>
     </header>
 
     <!-- ② 战场 Canvas（渲染层只读 state） -->
@@ -45,11 +46,11 @@
     <!-- ③ 底部操作区（玻璃浮层，热区 ≥44×44） -->
     <div id="controls">
       <button class="key" id="btnPotion" aria-label="药瓶">
-        <span class="icon">🧪</span><span class="count" id="potionCount">3</span>
+        <span class="icon"></span><span class="count" id="potionCount">3</span>
         <span class="cdmask" id="cdPotion"></span><span class="cdnum" id="cdnPotion"></span>
       </button>
       <button class="key big" id="btnDodge" aria-label="闪避">
-        <span class="icon">身法</span><span class="sub" id="staminaTag">100</span>
+        <span class="icon"></span><span class="sub" id="staminaTag">100</span>
         <span class="cdmask" id="cdDodge"></span><span class="cdnum" id="cdnDodge"></span>
       </button>
       <button class="key" id="btnSkillA" aria-label="技能一">
@@ -71,7 +72,7 @@
     <div id="toast" hidden></div>
   </div>
 </div>
-<div id="rotateTip" hidden><div class="panel">🌙 夜行录为竖屏游戏<br>请旋转手机至竖屏游玩</div></div>
+<div id="rotateTip" hidden><div class="panel">「月」夜行录为竖屏游戏<br>请旋转手机至竖屏游玩</div></div>
 <div id="fileTip" hidden>
   <div class="panel">
     <h2>无法直接打开</h2>

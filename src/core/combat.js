@@ -237,9 +237,11 @@ function dealDamageToEnemy(state, e, ctx, guaranteed) {
   if (e.shield > 0) e.shield = Math.max(0, e.shield - r.absorbed);
   e.hp -= toHp;
   e.flashTicks = r.crit ? AUX.critFlashTicks : AUX.hitFlashTicks;
+  // A1（制作人放开项）：damage 事件补带技能槽位（ctx.skillSlot core 内已存在；
+  // 复用 EKEYS 既有 'slot' 键，state.js 零改动）。-1 = 普攻/灼烧等非技能来源。
   emit(state, EV.DAMAGE, {
     x: e.x, y: e.y - AUX.floaterOffsetY, value: r.final, crit: r.crit,
-    targetId: e.uid, kind: 'enemy',
+    targetId: e.uid, kind: 'enemy', slot: ctx.skillSlot,
   });
 
   const p = state.player;
@@ -403,13 +405,15 @@ function resolveTelegraph(state, h) {
     dodged = p.invulnerable || out;
   }
   if (dodged) {
-    emit(state, EV.MECH_MISS, { x: p.x, y: p.y, name: h.name });
+    // A2（制作人放开项）：mechMiss/mechHit 补 color（red/orange），渲染层区分
+    // 「无敌帧穿过红机制」（隆重反馈）与「走出橙机制」（普通反馈）。
+    emit(state, EV.MECH_MISS, { x: p.x, y: p.y, name: h.name, color: h.color });
     if (p.invulnerable) emit(state, EV.DODGE_SUCCESS, { x: p.x, y: p.y });
   } else {
     applyFixedDamageToPlayer(state, h.damage, {
       stunTicks: h.stunTicks, slow: h.slow, burn: h.burn, sourceAtk: h.sourceAtk,
     });
-    emit(state, EV.MECH_HIT, { x: p.x, y: p.y, name: h.name, value: h.damage });
+    emit(state, EV.MECH_HIT, { x: p.x, y: p.y, name: h.name, value: h.damage, color: h.color });
   }
   h.active = false;
   // 点将台：预警结束后生成持续区（§6.3）

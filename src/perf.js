@@ -1,5 +1,6 @@
 // src/perf.js —— [B] 帧耗时采样、画质档位、URL ?q= 覆盖（tech §6）
-// 逻辑 tick 恒 30Hz 不变；低画质只降渲染侧（粒子数 / 飘字上限 / 视差层数）。
+// 逻辑 tick 恒 30Hz 不变；低画质只降渲染侧。
+// 降档清单：art_spec_v2 §7 + vfx_spec_v1 §7.3（视差/雾/尘埃/呼吸/残影/顿帧/震屏/描边发光/拖尾）。
 import { balance } from './core/tables.js';
 
 const FX = balance.fx;
@@ -16,6 +17,11 @@ export function createPerf(settings) {
   let slowFrames = 0;     // 连续超预算帧计数
   let auto = quality === 'auto';
   let level = 1;          // auto 档实际等级：0 low / 1 mid / 2 high
+
+  // 当前是否处于「低档」判定（手动 low 或 auto 降到 0）。
+  // 所有降档开关统一读它，保证 ?q=low 与自动降档行为一致。
+  const isLow = () =>
+    quality === 'low' || (auto && level === 0);
 
   return {
     get quality() { return quality; },
@@ -49,5 +55,15 @@ export function createPerf(settings) {
     },
     get floaterMax() { return quality === 'low' ? 6 : FX.floaterMax; },
     get parallaxLayers() { return quality === 'low' ? 2 : 3; },
+    get low() { return isLow(); },
+    // ── art §7 / vfx §7.3 降档开关 ──
+    get fogOn() { return !isLow(); },            // 2 雾带 → 0
+    get dustMax() { return isLow() ? 8 : 24; },  // 尘埃 24 → 8
+    get breathing() { return !isLow(); },        // 光斑呼吸 / 低血呼吸 / 就绪呼吸（CSS 侧走 body.lowq）
+    get critSeal() { return !isLow(); },         // 暴击朱砂印
+    get hitStop() { return !isLow(); },          // 暴击顿帧
+    get shakeOn() { return !isLow(); },          // 震屏（降档自动关，与晕动开关独立）
+    get glowLineWidth() { return isLow() ? 3 : 6; },  // Boss 光晕等描边发光减半
+    get trails() { return !isLow(); },           // 弹道/环境拖尾
   };
 }

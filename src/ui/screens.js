@@ -2,10 +2,28 @@
 // 全部只读 state（选职业时的 meta 与解锁态）；用户操作通过回调交还 main.js 驱动 core。
 import { balance, theme, allClasses, getSkill } from '../core/tables.js';
 import { isClassUnlocked, classUnlockText, compareEquipment } from '../core/progression.js';
+import { iconSvg } from './icons.js';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
 }[c]));
+
+const svgIcon = (k) => `<span class="svgIcon">${iconSvg(k)}</span>`;
+
+// 三选一图标按 reward type 映射（progression.js 的 icon 字段按约定忽略，core 零改动）
+function rewardIcon(state, r) {
+  switch (r.type) {
+    case 'equipment': return 'gift';
+    case 'heal': return 'potion';
+    case 'buff': return 'star';
+    case 'unlockSkill': return r.skillId ? 'sk-' + r.skillId : 'scroll';
+    case 'upgradeSkill': {
+      const s = state.player && state.player.skills[r.slot];
+      return s ? 'sk-' + s.id : 'scroll';
+    }
+    default: return 'scroll';
+  }
+}
 
 export function createScreens(notify) {
   const overlay = document.getElementById('overlay');
@@ -49,7 +67,7 @@ export function createScreens(notify) {
       cards += `
       <div class="classCard ${sel ? 'selected' : ''} ${unlocked ? '' : 'locked'}" data-class="${id}">
         ${unlocked ? '' : `<span class="lockTag">${esc(classUnlockText(id))}</span>`}
-        <div class="cname">${c.icon} ${esc(c.name)}</div>
+        <div class="cname">${svgIcon(c.icon)} ${esc(c.name)}</div>
         <div class="crole">${esc(c.role)} · 资源：${esc(c.resource.name)} ${c.resource.max}</div>
         <div class="cdesc">${esc(c.desc)}</div>
         <div class="cstats">
@@ -106,10 +124,12 @@ export function createScreens(notify) {
     let cards = '';
     for (let i = 0; i < rs.length; i++) {
       const r = rs[i];
+      // progression 里 desc 内嵌的 icon key（sk-xxx）在此剥离，图标按 type 映射
+      const desc = String(r.desc || '').replace(/sk-[a-z]+\s*/g, '');
       cards += `
       <div class="rewardCard" data-i="${i}">
-        <div class="rtitle">${r.icon || '✦'} ${esc(r.title)}</div>
-        <div class="rdesc">${esc(r.desc || '')}</div>
+        <div class="rtitle">${svgIcon(rewardIcon(state, r))} ${esc(r.title)}</div>
+        <div class="rdesc">${esc(desc)}</div>
       </div>`;
     }
     show(`
@@ -141,7 +161,7 @@ export function createScreens(notify) {
     }
     const rc = theme.rarityColor[item.rarity] || theme.ink3;
     show(`
-      <div class="title" style="color:${rc}">${item.icon} ${esc(item.name)}</div>
+      <div class="title" style="color:${rc}">${svgIcon(item.icon)} ${esc(item.name)}</div>
       <div class="subtitle">${esc(balance.rarityNames[item.rarity])}品 · ${esc(balance.slotNames[item.slot])} · 是否替换？</div>
       <table class="compareTable">
         <tr><th></th><th>当前</th><th>新</th></tr>
@@ -167,13 +187,13 @@ export function createScreens(notify) {
       const cur = s ? getSkill(s.id) : null;
       items += `
       <div class="item" data-slot="${i}">
-        <span class="sicon">${cur ? cur.icon : '—'}</span>
+        <span class="sicon">${cur ? svgIcon(cur.icon) : '—'}</span>
         <span><span class="sname">${cur ? esc(cur.name) : '空槽'}</span><div class="sdesc">${cur ? 'Lv' + s.level : ''}</span></span>
         <span class="slv">${cur ? '替换' : '放入'}</span>
       </div>`;
     }
     show(`
-      <div class="title">${sk.icon} ${esc(sk.name)}</div>
+      <div class="title">${svgIcon(sk.icon)} ${esc(sk.name)}</div>
       <div class="subtitle">技能栏已满 · 选择要替换的槽位</div>
       <div class="panelList">${items}</div>
       <div class="btnRow"><button class="btn" id="skipSkill">放弃新技能</button></div>
@@ -200,7 +220,7 @@ export function createScreens(notify) {
       const maxed = sk && s.level >= sk.levels.length;
       items += `
       <div class="item ${maxed ? 'locked' : ''}" data-slot="${i}">
-        <span class="sicon">${sk ? sk.icon : '—'}</span>
+        <span class="sicon">${sk ? svgIcon(sk.icon) : '—'}</span>
         <span><span class="sname">${sk ? esc(sk.name) : '空槽'}</span><div class="sdesc">${maxed ? '已满级' : sk ? esc(sk.desc || '') : ''}</div></span>
         <span class="slv">${s ? `Lv${s.level}${maxed ? '' : ' → ' + (s.level + 1)}` : ''}</span>
       </div>`;
@@ -253,14 +273,16 @@ export function createScreens(notify) {
   // ───────── 暂停 ─────────
   function showPause(hd) {
     pausedByScreen = true;
+    const stIcon = (k) => `<span class="sicon">${iconSvg(k)}</span>`;
     show(`
       <div class="title">暂 停</div>
       <div class="subtitle">夜色凝滞 · 妖亦止步</div>
       <div class="panelList">
-        <div class="item" id="resumeItem"><span class="sicon">▶</span><span class="sname">继续夜行</span><span class="slv"></span></div>
-        <div class="item" id="muteItem"><span class="sicon">${hd.muted ? '🔇' : '🔊'}</span><span class="sname">音效</span><span class="slv">${hd.muted ? '已静音' : '开启'}</span></div>
-        <div class="item" id="qualityItem"><span class="sicon">✨</span><span class="sname">画质</span><span class="slv">${hd.quality}</span></div>
-        <div class="item" id="quitItem"><span class="sicon">🚪</span><span class="sname">放弃本局</span><span class="slv">道行保留</span></div>
+        <div class="item" id="resumeItem">${stIcon('resume')}<span class="sname">继续夜行</span><span class="slv"></span></div>
+        <div class="item" id="muteItem">${stIcon(hd.muted ? 'sound-off' : 'sound-on')}<span class="sname">音效</span><span class="slv">${hd.muted ? '已静音' : '开启'}</span></div>
+        <div class="item" id="shakeItem">${stIcon('shake')}<span class="sname">减少屏幕震动</span><span class="slv">${hd.reduceShake ? '开启' : '关闭'}</span></div>
+        <div class="item" id="qualityItem">${stIcon('spark')}<span class="sname">画质</span><span class="slv">${hd.quality}</span></div>
+        <div class="item" id="quitItem">${stIcon('quit')}<span class="sname">放弃本局</span><span class="slv">道行保留</span></div>
       </div>
     `);
     document.getElementById('resumeItem').addEventListener('pointerdown', (ev) => {
@@ -270,6 +292,11 @@ export function createScreens(notify) {
     document.getElementById('muteItem').addEventListener('pointerdown', (ev) => {
       ev.preventDefault();
       hd.onToggleMute();
+      showPause(hd);
+    });
+    document.getElementById('shakeItem').addEventListener('pointerdown', (ev) => {
+      ev.preventDefault();
+      hd.onToggleShake();
       showPause(hd);
     });
     document.getElementById('qualityItem').addEventListener('pointerdown', (ev) => {
